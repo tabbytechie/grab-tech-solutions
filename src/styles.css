@@ -38,19 +38,20 @@
 
 :root {
   --radius: 0.25rem;
-  /* Grab — cyber-minimalist terminal */
-  --background: oklch(0.14 0.005 280);          /* #0A0A0B */
-  --foreground: oklch(1 0 0);
-  --surface: oklch(0.19 0.005 280);             /* #161617 */
-  --surface-2: oklch(0.23 0.005 280);
-  --muted: oklch(0.19 0.005 280);
-  --muted-foreground: oklch(0.62 0.01 280);     /* #88888E */
-  --border: oklch(1 0 0 / 0.06);
-  --accent: oklch(0.94 0.18 118);                /* #D1FF33 lime */
-  --accent-foreground: oklch(0.14 0.005 280);
+  /* Grab — light mode (paper + ink, lime accent) */
+  --background: oklch(0.985 0.003 90);          /* warm paper */
+  --foreground: oklch(0.16 0.005 280);
+  --surface: oklch(0.96 0.004 90);
+  --surface-2: oklch(0.92 0.005 90);
+  --muted: oklch(0.96 0.004 90);
+  --muted-foreground: oklch(0.45 0.01 280);
+  --border: oklch(0.16 0.005 280 / 0.10);
+  --accent: oklch(0.78 0.20 118);                /* deeper lime for contrast */
+  --accent-foreground: oklch(0.16 0.005 280);
 }
 
 .dark {
+  /* Grab — cyber-minimalist terminal (dark) */
   --background: oklch(0.14 0.005 280);
   --foreground: oklch(1 0 0);
   --surface: oklch(0.19 0.005 280);
