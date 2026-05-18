@@ -41,11 +41,12 @@ function Index() {
             Grab / Tech.Advisory
           </span>
         </div>
-        <div className="hidden md:flex items-center gap-10 text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
+        <div className="hidden md:flex items-center gap-8 text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
           <a href="#method" className="hover:text-accent transition-colors">The Method</a>
           <a href="#network" className="hover:text-accent transition-colors">Network</a>
           <a href="#services" className="hover:text-accent transition-colors">Services</a>
-          <button className="px-5 py-2 border border-white/10 text-foreground hover:border-accent hover:text-accent transition-all">
+          <ThemeToggle />
+          <button className="px-5 py-2 border border-border text-foreground hover:border-accent hover:text-accent transition-all">
             Initialize_Contact
           </button>
         </div>
