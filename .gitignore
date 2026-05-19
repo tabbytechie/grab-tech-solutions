@@ -1,3 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# DB
+*.db
+*.sqlite3
+
 # Logs
 logs
 *.log
@@ -20,6 +54,10 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Environment files
+.env
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -30,3 +68,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Lovable
+.lovable/

@@ -39,14 +39,14 @@
 :root {
   --radius: 0.25rem;
   /* Grab — light mode (paper + ink, lime accent) */
-  --background: oklch(0.985 0.003 90);          /* warm paper */
+  --background: oklch(0.985 0.003 90); /* warm paper */
   --foreground: oklch(0.16 0.005 280);
   --surface: oklch(0.96 0.004 90);
   --surface-2: oklch(0.92 0.005 90);
   --muted: oklch(0.96 0.004 90);
   --muted-foreground: oklch(0.45 0.01 280);
-  --border: oklch(0.16 0.005 280 / 0.10);
-  --accent: oklch(0.78 0.20 118);                /* deeper lime for contrast */
+  --border: oklch(0.16 0.005 280 / 0.1);
+  --accent: oklch(0.78 0.2 118); /* deeper lime for contrast */
   --accent-foreground: oklch(0.16 0.005 280);
 }
 
@@ -64,17 +64,28 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body { background-color: var(--color-background); color: var(--color-foreground); }
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
   body {
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  ::selection { background: var(--color-accent); color: var(--color-accent-foreground); }
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
 }
 
 @layer utilities {
-  .font-mono { font-family: var(--font-mono); }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
   .grid-noise {
     background-image:
       linear-gradient(to right, oklch(1 0 0 / 0.04) 1px, transparent 1px),
@@ -84,8 +95,14 @@
 }
 
 @keyframes blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 .cursor-blink::after {
   content: "▋";

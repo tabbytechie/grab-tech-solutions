@@ -73,10 +73,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Grab — Tech Advisory for Senior Operators" },
-      { name: "description", content: "Grab is a specialized consultancy for senior tech individuals — fractional CTO, infrastructure audits, and IC performance advisory." },
+      {
+        name: "description",
+        content:
+          "Grab is a specialized consultancy for senior tech individuals — fractional CTO, infrastructure audits, and IC performance advisory.",
+      },
       { name: "author", content: "Grab Advisory" },
       { property: "og:title", content: "Grab — Tech Advisory for Senior Operators" },
-      { property: "og:description", content: "Specialized consultancy for senior tech individuals. Strategic leverage, technical audits, and career architecture." },
+      {
+        property: "og:description",
+        content:
+          "Specialized consultancy for senior tech individuals. Strategic leverage, technical audits, and career architecture.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },

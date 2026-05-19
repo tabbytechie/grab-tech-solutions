@@ -1,0 +1,16 @@
+fastapi==0.109.1
+sqlalchemy[asyncio]==2.0.29
+asyncpg==0.28.0
+aiosqlite==0.18.0
+uvicorn==0.27.0
+pydantic[email]==2.8.0
+pydantic-settings==2.0.3
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+slowapi==0.1.9
+redis==4.6.0
+pytest==8.4.2
+httpx==0.28.1
+pytest-asyncio==0.23.3
+bcrypt==4.0.1

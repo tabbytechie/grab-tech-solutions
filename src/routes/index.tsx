@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import heroData from "@/assets/hero-data.jpg";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -8,30 +10,70 @@ export const Route = createFileRoute("/")({
 
 const services = [
   {
-    n: "01. Fractional CTO",
-    title: "Strategic Leadership",
-    body: "High-level technical roadmap planning, hiring pipeline optimization, and executive alignment for Series A–C startups.",
+    n: "01",
+    title: "Fractional CTO",
+    body: "Strategic leadership for high-growth teams. We provide the architectural oversight and organizational design needed to scale without friction.",
   },
   {
-    n: "02. Tech Audit",
-    title: "Infrastructure Review",
-    body: "Deep-dive analysis of cloud architecture, security posture, and CI/CD pipelines to ensure maximum operational efficiency.",
+    n: "02",
+    title: "Infra Audit",
+    body: "Deep-dive technical debt assessment. We identify bottlenecks in your stack and provide a pragmatic roadmap for modernization.",
   },
   {
-    n: "03. Talent OS",
+    n: "03",
     title: "IC Performance",
-    body: "Designing individual contributor tracks that retain top engineering talent and foster a culture of technical mastery.",
+    body: "Advisory for senior individual contributors. Helping staff+ engineers maximize their leverage and business impact.",
   },
 ];
 
 const methodSteps = [
-  { k: "/01", t: "Discovery", d: "60-min diagnostic call. We map your current state, constraints, and the leverage points." },
-  { k: "/02", t: "Mandate", d: "A written engagement scope — deliverables, cadence, and success criteria. No retainers without clarity." },
-  { k: "/03", t: "Execution", d: "Direct work with a principal advisor. Weekly artifacts, async messaging, async-first cadence." },
-  { k: "/04", t: "Handoff", d: "Documented playbooks, decision logs, and a runway for you to operate independently." },
+  {
+    k: "DIAGNOSE",
+    t: "Technical discovery",
+    d: "48-hour intensive audit of your existing stack, culture, and roadmap.",
+  },
+  {
+    k: "MANDATE",
+    t: "Strategic Roadmap",
+    d: "Alignment on key objectives and the technical leverage needed to hit them.",
+  },
+  {
+    k: "EXECUTE",
+    t: "Active Advisory",
+    d: "Weekly hands-on support, architectural reviews, and leadership coaching.",
+  },
+  {
+    k: "OPTIMIZE",
+    t: "Performance Loop",
+    d: "Continuous refinement of systems and processes for long-term sustainability.",
+  },
 ];
 
 function Index() {
+  const navigate = useNavigate();
+  const isAuthenticated = api.auth.isAuthenticated();
+
+  const handleAction = async () => {
+    if (isAuthenticated) {
+      navigate({ to: "/dashboard" });
+    } else {
+      navigate({ to: "/login" });
+    }
+  };
+
+  const handleRequestAudit = () => {
+    if (isAuthenticated) {
+      toast.success("Audit Request Received", {
+        description: "An advisor will reach out to schedule your 48-hour discovery session.",
+      });
+    } else {
+      toast.info("Identification Required", {
+        description: "Please initialize a session to request a technical audit.",
+      });
+      navigate({ to: "/login" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Navigation */}
@@ -43,13 +85,22 @@ function Index() {
           </span>
         </Link>
         <div className="hidden md:flex items-center gap-8 text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
-          <Link to="/method" className="hover:text-accent transition-colors">The Method</Link>
-          <Link to="/network" className="hover:text-accent transition-colors">Network</Link>
-          <Link to="/services" className="hover:text-accent transition-colors">Services</Link>
-          <ThemeToggle />
-          <Link to="/contact" className="px-5 py-2 border border-border text-foreground hover:border-accent hover:text-accent transition-all">
-            Initialize_Contact
+          <Link to="/method" className="hover:text-accent transition-colors">
+            The Method
           </Link>
+          <Link to="/network" className="hover:text-accent transition-colors">
+            Network
+          </Link>
+          <Link to="/services" className="hover:text-accent transition-colors">
+            Services
+          </Link>
+          <ThemeToggle />
+          <button
+            onClick={handleAction}
+            className="px-5 py-2 border border-border text-foreground hover:border-accent hover:text-accent transition-all"
+          >
+            {isAuthenticated ? "Go_to_Dashboard" : "Initialize_Contact"}
+          </button>
         </div>
       </nav>
 
@@ -70,10 +121,14 @@ function Index() {
               <span className="text-accent">EXCELLENCE</span>
             </h1>
             <p className="mt-10 text-lg md:text-2xl text-muted-foreground max-w-2xl leading-relaxed">
-              Specialized consultancy for senior tech leadership. We optimize engineering cultures, scale distributed systems, and architect high-frequency growth engines.
+              Specialized consultancy for senior tech leadership. We optimize engineering cultures,
+              scale distributed systems, and architect high-frequency growth engines.
             </p>
             <div className="mt-12 flex flex-wrap gap-4">
-              <button className="px-7 py-4 bg-accent text-accent-foreground font-bold text-xs uppercase tracking-widest hover:brightness-110 transition">
+              <button
+                onClick={handleRequestAudit}
+                className="px-7 py-4 bg-accent text-accent-foreground font-bold text-xs uppercase tracking-widest hover:brightness-110 transition"
+              >
                 Request Audit
               </button>
               <button className="px-7 py-4 border border-border font-bold text-xs uppercase tracking-widest hover:bg-surface transition">
@@ -115,7 +170,9 @@ function Index() {
           ].map(([v, l]) => (
             <div key={l} className="flex flex-col">
               <span className="text-3xl md:text-4xl font-extrabold tracking-tighter">{v}</span>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2">{l}</span>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2">
+                {l}
+              </span>
             </div>
           ))}
         </div>
@@ -159,7 +216,8 @@ function Index() {
               Diagnose. Mandate. Execute.
             </h3>
             <p className="mt-6 text-muted-foreground leading-relaxed max-w-md">
-              A deliberate cadence built around the time-on-task realities of senior operators. No fluff, no rituals — only artifacts.
+              A deliberate cadence built around the time-on-task realities of senior operators. No
+              fluff, no rituals — only artifacts.
             </p>
           </div>
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-px bg-border border border-border">
@@ -209,7 +267,8 @@ function Index() {
           Initialize the next mandate.
         </h2>
         <p className="mt-6 max-w-xl mx-auto text-muted-foreground leading-relaxed">
-          Selective entry. We work with a limited number of operators per quarter to keep the signal high.
+          Selective entry. We work with a limited number of operators per quarter to keep the signal
+          high.
         </p>
         <Link to="/contact" className="inline-block mt-10 px-10 py-5 bg-accent text-accent-foreground font-bold text-xs uppercase tracking-widest hover:brightness-110 transition">
           Apply for Engagement →
@@ -220,9 +279,15 @@ function Index() {
       <footer className="px-6 md:px-10 py-10 border-t border-border flex flex-col md:flex-row md:items-center justify-between gap-6 text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
         <div>© 2026 Grab Advisory Group</div>
         <div className="flex gap-8">
-          <a href="#" className="hover:text-foreground">Twitter</a>
-          <a href="#" className="hover:text-foreground">Github</a>
-          <a href="#" className="hover:text-foreground">LinkedIn</a>
+          <a href="#" className="hover:text-foreground">
+            Twitter
+          </a>
+          <a href="#" className="hover:text-foreground">
+            Github
+          </a>
+          <a href="#" className="hover:text-foreground">
+            LinkedIn
+          </a>
         </div>
         <div className="flex items-center gap-2">
           <div className="size-1.5 rounded-full bg-accent animate-pulse" />
