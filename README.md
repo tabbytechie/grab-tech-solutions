@@ -7,7 +7,8 @@ A robust, production-grade distributed system designed for high-throughput data 
 - **Principal Engineering:** Optimized React components, non-blocking Python I/O, and 3NF PostgreSQL relations.
 - **Reliability:** Dual-layer testing suite with mandatory validation in the containerization lifecycle.
 - **Observability:** Distributed tracing via Correlation IDs, structured JSON logging, and client-side telemetry.
-- **Security:** OAuth2/JWT authentication, Pydantic-enforced input sanitization, and Redis-backed distributed rate limiting.
+- **Security:** OAuth2/JWT session management via Secure/HttpOnly cookies, Pydantic-enforced input sanitization, and Redis-backed distributed rate limiting.
+- **Hardening:** Production Docker images run as non-root users (`appuser`) for system integrity.
 
 ---
 
@@ -75,3 +76,4 @@ docker-compose up -d
 ## 📐 Documentation Index
 - [Backend Documentation](./backend/README.md) - API Specs, Logging & Task Pipeline.
 - [Frontend Documentation](./src/README.md) - Component State Machines & Telemetry.
+- [Production Readiness Checklist](./SECURITY_CHECKLIST.md) - Security, performance, residual risks, and SPFx migration notes.

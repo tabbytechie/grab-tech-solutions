@@ -59,4 +59,11 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 
 # Start the FastAPI application
+ENV PORT=8000
+
+# Create a non-privileged user to run the app
+RUN addgroup --system appgroup && adduser --system --group appuser
+RUN chown -R appuser:appgroup /app
+USER appuser
+
 CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
