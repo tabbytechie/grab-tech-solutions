@@ -4,6 +4,13 @@ import Dashboard from "../routes/dashboard/index";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
+// Mock TanStack Router
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: vi.fn(),
+  Link: ({ children, to }: any) => <a href={to}>{children}</a>,
+  createFileRoute: () => (config: any) => config,
+}));
+
 // Mock the API library
 vi.mock("../lib/api", () => ({
   api: {
@@ -29,6 +36,11 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe("Dashboard Component State Machine", () => {
+  beforeEach(() => {
+    queryClient.clear();
+    vi.clearAllMocks();
+  });
+
   it("renders skeleton state during initial fetching", () => {
     (api.tasks.list as any).mockReturnValue(new Promise(() => {})); // Never resolves
     render(<Dashboard />, { wrapper });
@@ -46,8 +58,9 @@ describe("Dashboard Component State Machine", () => {
     render(<Dashboard />, { wrapper });
 
     await waitFor(() => {
-      expect(screen.getByText("task-1...")).toBeInTheDocument();
-      expect(screen.getByText("Completed")).toBeInTheDocument();
+      expect(screen.getByText(/task-1/i)).toBeInTheDocument();
+      // Target the Badge specifically to avoid conflict with the Select option
+      expect(screen.getByText("Completed", { selector: ".bg-green-500\\/80" })).toBeInTheDocument();
     });
   });
 
@@ -60,21 +73,31 @@ describe("Dashboard Component State Machine", () => {
 
     render(<Dashboard />, { wrapper });
 
-    await waitFor(() => expect(screen.getByText("alpha-ta...")).toBeInTheDocument());
+    // Use a function matcher because the ID is split into two spans
+    const findTaskId = (id: string) => screen.findByText((content, element) => {
+      const hasText = (node: Element) => node.textContent === id;
+      const elementHasText = hasText(element!);
+      const childrenDontHaveText = Array.from(element?.children || []).every(
+        (child) => !hasText(child)
+      );
+      return elementHasText && childrenDontHaveText;
+    });
+
+    await waitFor(async () => expect(await findTaskId("alpha-task")).toBeInTheDocument());
 
     const searchInput = screen.getByPlaceholderText(/Search by Task ID.../i);
     const statusSelect = screen.getByRole("combobox");
 
     // 1. Filter by Search
     fireEvent.change(searchInput, { target: { value: "beta" } });
-    expect(screen.queryByText("alpha-ta...")).not.toBeInTheDocument();
-    expect(screen.getByText("beta-tas...")).toBeInTheDocument();
+    expect(screen.queryByText(/alpha-ta/i)).not.toBeInTheDocument();
+    expect(await findTaskId("beta-task")).toBeInTheDocument();
 
     // 2. Filter by Status
     fireEvent.change(searchInput, { target: { value: "" } });
     fireEvent.change(statusSelect, { target: { value: "completed" } });
-    expect(screen.getByText("alpha-ta...")).toBeInTheDocument();
-    expect(screen.queryByText("beta-tas...")).not.toBeInTheDocument();
+    expect(await findTaskId("alpha-task")).toBeInTheDocument();
+    expect(screen.queryByText(/beta-tas/i)).not.toBeInTheDocument();
   });
 
   it("renders error state on API failure", async () => {

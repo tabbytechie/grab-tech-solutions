@@ -42,10 +42,14 @@ function Login() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor="email"
+              className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground"
+            >
               Email_Address
             </label>
             <input
+              id="email"
               type="email"
               required
               className="w-full bg-surface/50 border border-border px-4 py-3 text-sm font-mono focus:border-accent outline-none"
@@ -54,10 +58,14 @@ function Login() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor="password"
+              className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground"
+            >
               Access_Key
             </label>
             <input
+              id="password"
               type="password"
               required
               className="w-full bg-surface/50 border border-border px-4 py-3 text-sm font-mono focus:border-accent outline-none"
@@ -85,3 +93,5 @@ function Login() {
     </div>
   );
 }
+
+export default Login;

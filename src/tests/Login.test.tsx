@@ -27,6 +27,7 @@ vi.mock("@tanstack/react-router", async () => {
   return {
     ...actual,
     useNavigate: () => mockNavigate,
+    Link: ({ children, to }: any) => <a href={to}>{children}</a>,
     createFileRoute: () => (config: any) => config,
   };
 });
