@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -8,6 +8,7 @@ from ...database import get_db
 from ...models import User
 from ...schemas import UserCreate, UserResponse, Token, ResponseEnvelope
 from ...core.security import create_access_token, get_password_hash, verify_password
+from ...core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -44,10 +45,11 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 async def login(
+    response: Response,
     db: AsyncSession = Depends(get_db), 
     form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    """OAuth2 compatible token login, get an access token for future requests."""
+    """OAuth2 compatible token login, sets an HttpOnly cookie for session management."""
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalars().first()
     
@@ -61,7 +63,25 @@ async def login(
         raise HTTPException(status_code=400, detail="Inactive user")
     
     access_token = create_access_token(subject=user.email)
+    
+    # Set secure, HttpOnly cookie
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        samesite="lax",
+        secure=settings.COOKIE_SECURE,
+    )
+    
     return {
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+@router.post("/logout")
+async def logout(response: Response):
+    """Clears the authentication cookie."""
+    response.delete_cookie("access_token")
+    return {"status": "success", "message": "Logged out"}

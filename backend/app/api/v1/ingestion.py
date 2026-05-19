@@ -26,7 +26,7 @@ async def task_log_websocket(
     try:
         # Resolve user from token
         from ..deps import get_current_user
-        user = await get_current_user(db=db, token=token)
+        user = await get_current_user(db=db, token=token, access_token=None)
         
         # Verify user has permission for this task (owns the provider)
         result = await db.execute(

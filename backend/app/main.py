@@ -5,9 +5,11 @@ import json
 from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from .api.v1.ingestion import router as ingestion_router
 from .api.v1.providers import router as providers_router
@@ -19,6 +21,17 @@ from .core.config import settings
 # Structured Logging Configuration
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("api.telemetry")
+
+# Initialize Azure Monitor if connection string is provided
+if settings.APPLICATIONINSIGHTS_CONNECTION_STRING:
+    try:
+        from azure.monitor.opentelemetry import configure_azure_monitor
+        configure_azure_monitor(
+            connection_string=settings.APPLICATIONINSIGHTS_CONNECTION_STRING,
+        )
+        logger.info("Azure Monitor Telemetry Activated.")
+    except ImportError:
+        logger.warning("azure-monitor-opentelemetry not installed. Skipping Azure Monitor initialization.")
 
 # Setup Rate Limiting with Redis Backend
 limiter = Limiter(
@@ -38,15 +51,48 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-ALLOWED_ORIGINS = ["http://localhost:5173"]
+# Ensure proper handling of X-Forwarded-Proto for TLS termination
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=settings.trusted_hosts_list)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_hosts_list)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    if settings.HTTPS_ONLY and request.url.scheme != "https":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="HTTPS is required for this environment.",
+        )
+
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    if settings.HTTPS_ONLY:
+        response.headers.setdefault(
+            "Strict-Transport-Security",
+            f"max-age={settings.HSTS_MAX_AGE_SECONDS}; includeSubDomains",
+        )
+    return response
+
+@app.middleware("http")
+async def payload_size_middleware(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    max_bytes = settings.MAX_PAYLOAD_SIZE_MB * 1024 * 1024
+    if content_length and int(content_length) > max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"Request payload exceeds {settings.MAX_PAYLOAD_SIZE_MB} MB.",
+        )
+    return await call_next(request)
 
 @app.middleware("http")
 async def telemetry_middleware(request: Request, call_next):

@@ -9,6 +9,7 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: vi.fn(),
   Link: ({ children, to }: any) => <a href={to}>{children}</a>,
   createFileRoute: () => (config: any) => config,
+  createLazyFileRoute: () => (config: any) => config,
 }));
 
 // Mock the API library
@@ -129,5 +130,31 @@ describe("Dashboard Component State Machine", () => {
     await waitFor(() => expect(signOutBtn).toBeDisabled());
 
     resolveLogout!();
+  });
+
+  describe("Accessibility (WCAG 2.1)", () => {
+    it("contains a search region with accessible labels", async () => {
+      (api.tasks.list as any).mockResolvedValue({ payload: [] });
+      render(<Dashboard />, { wrapper });
+
+      const searchRegion = screen.getByRole("search");
+      expect(searchRegion).toBeInTheDocument();
+
+      const searchInput = screen.getByLabelText(/Search Tasks/i);
+      expect(searchInput).toBeInTheDocument();
+      expect(searchInput).toHaveAttribute("id", "search-tasks");
+
+      const statusFilter = screen.getByLabelText(/Filter by Status/i);
+      expect(statusFilter).toBeInTheDocument();
+      expect(statusFilter).toHaveAttribute("id", "status-filter");
+    });
+
+    it("presents the task monitor table with an accessible name", async () => {
+      (api.tasks.list as any).mockResolvedValue({ payload: [] });
+      render(<Dashboard />, { wrapper });
+
+      const table = screen.getByRole("table", { name: /Ingestion Tasks Monitor/i });
+      expect(table).toBeInTheDocument();
+    });
   });
 });
