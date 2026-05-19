@@ -7,16 +7,21 @@ os.environ["ENVIRONMENT"] = "test"
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.engine import make_url
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 from backend.app.main import app
-from backend.app.database import Base, engine as app_engine
-from backend.app.core.config import settings
+from backend.app.database import Base, get_db
 
-# Use either TEST_DATABASE_URL or the default settings URL for testing
-DATABASE_URL = settings.DATABASE_URL
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", DATABASE_URL)
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
+
+if not TEST_DATABASE_URL:
+    raise RuntimeError("TEST_DATABASE_URL must be set before running backend tests.")
+
+test_db_name = make_url(TEST_DATABASE_URL).database or ""
+if "test" not in test_db_name.lower():
+    raise RuntimeError("Refusing to run tests against a database whose name does not contain 'test'.")
 
 @pytest_asyncio.fixture(scope="function", loop_scope="function")
 async def test_engine():
@@ -36,8 +41,7 @@ async def test_engine():
 @pytest_asyncio.fixture(scope="function", loop_scope="function")
 async def db_session(test_engine):
     """Provides an isolated database session for a test."""
-    from backend.app.database import async_sessionmaker, AsyncSession
-    
+
     session_factory = async_sessionmaker(
         bind=test_engine, 
         class_=AsyncSession, 
@@ -50,8 +54,7 @@ async def db_session(test_engine):
 @pytest_asyncio.fixture(loop_scope="function")
 async def client(db_session):
     """Provides an AsyncClient with the database dependency overridden."""
-    from backend.app.database import get_db
-    
+
     async def override_get_db():
         yield db_session
 
