@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     @field_validator("SECRET_KEY", mode="before")
     @classmethod
     def validate_secret_key(cls, v: str) -> str:
-        if not v or v == "super-secret-key-for-development-purposes":
+        # Avoid warning during tests or if explicitly set
+        if (not v or v == "super-secret-key-for-development-purposes") and os.getenv("ENVIRONMENT") != "test":
             warnings.warn(
                 "SECRET_KEY is insecure or missing. Please set a strong SECRET_KEY in the environment.",
                 UserWarning
