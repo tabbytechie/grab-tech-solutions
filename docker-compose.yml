@@ -7,6 +7,8 @@ services:
       POSTGRES_DB: grabtech_solutions
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Initialize DB with project SQL (creates uuid-ossp extension, tables, etc.)
+      - ./backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5432:5432"
 

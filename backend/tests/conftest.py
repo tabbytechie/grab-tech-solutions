@@ -8,6 +8,7 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.engine import make_url
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
@@ -23,7 +24,7 @@ test_db_name = make_url(TEST_DATABASE_URL).database or ""
 if "test" not in test_db_name.lower():
     raise RuntimeError("Refusing to run tests against a database whose name does not contain 'test'.")
 
-@pytest_asyncio.fixture(scope="function", loop_scope="function")
+@pytest_asyncio.fixture
 async def test_engine():
     """Initializes the test database and manages the schema lifecycle."""
     engine = create_async_engine(
@@ -32,13 +33,18 @@ async def test_engine():
         poolclass=StaticPool if "sqlite" in TEST_DATABASE_URL else None,
     )
     async with engine.begin() as conn:
+        # Ensure uuid-ossp extension exists when using Postgres so
+        # `uuid_generate_v4()` is available for default UUID columns.
+        url = make_url(TEST_DATABASE_URL)
+        if "postgres" in (url.drivername or "") or "postgres" in (url.host or ""):
+            await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
         await conn.run_sync(Base.metadata.create_all)
     yield engine
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
-@pytest_asyncio.fixture(scope="function", loop_scope="function")
+@pytest_asyncio.fixture
 async def db_session(test_engine):
     """Provides an isolated database session for a test."""
 
@@ -51,7 +57,7 @@ async def db_session(test_engine):
     async with session_factory() as session:
         yield session
 
-@pytest_asyncio.fixture(loop_scope="function")
+@pytest_asyncio.fixture
 async def client(db_session):
     """Provides an AsyncClient with the database dependency overridden."""
 
